@@ -38,9 +38,9 @@ function App() {
       rightCol: width - face.right_col * width,
       bottomRow: height - face.bottom_row * height
     };
-    console.log(faceBox);
     return faceBox;
   };
+  const displayFaceBox = setBox;
   const onInputChange = event => {
     setInput(event.target.value);
   };
@@ -48,7 +48,7 @@ function App() {
     setImageUrl(input);
     app.models
       .predict({ id: Clarifai.FACE_DETECT_MODEL }, input)
-      .then(calculateFaceLocation)
+      .then(data => displayFaceBox(calculateFaceLocation(data)))
       .catch(console.log);
   };
   return (
@@ -61,7 +61,7 @@ function App() {
         onInputChange={onInputChange}
         onButtonSubmit={onButtonSubmit}
       />
-      <FaceRecognition imageUrl={ImageUrl} />
+      <FaceRecognition box={box} imageUrl={ImageUrl} />
     </div>
   );
 }
