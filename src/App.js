@@ -23,24 +23,26 @@ const particlesOptions = {
 function App() {
   const [input, setInput] = useState('');
   const [ImageUrl, setImageUrl] = useState('');
-  const [box, setBox] = useState({});
+  const [faceBoxLocations, setFaceBoxLocations] = useState([]);
 
   const app = new Clarifai.App({ apiKey: API_KEY });
 
-  const calculateFaceLocation = data => {
-    const face = data.outputs[0].data.regions[0].region_info.bounding_box;
+  const calculateFaceBoxLocations = data => {
+    const { regions } = data.outputs[0].data;
     const image = document.getElementById('inputImage');
     const width = Number(image.width);
     const height = Number(image.height);
-    const faceBox = {
-      leftCol: face.left_col * width,
-      topRow: face.top_row * height,
-      rightCol: width - face.right_col * width,
-      bottomRow: height - face.bottom_row * height
-    };
-    return faceBox;
+
+    return regions.map(face => {
+      const { bounding_box } = face.region_info;
+      return {
+        leftCol: bounding_box.left_col * width,
+        topRow: bounding_box.top_row * height,
+        rightCol: width - bounding_box.right_col * width,
+        bottomRow: height - bounding_box.bottom_row * height
+      };
+    });
   };
-  const displayFaceBox = setBox;
   const onInputChange = event => {
     setInput(event.target.value);
   };
@@ -48,9 +50,10 @@ function App() {
     setImageUrl(input);
     app.models
       .predict({ id: Clarifai.FACE_DETECT_MODEL }, input)
-      .then(data => displayFaceBox(calculateFaceLocation(data)))
+      .then(data => setFaceBoxLocations(calculateFaceBoxLocations(data)))
       .catch(console.log);
   };
+
   return (
     <div className="App">
       <Particles className="particles" params={particlesOptions} />
@@ -61,7 +64,10 @@ function App() {
         onInputChange={onInputChange}
         onButtonSubmit={onButtonSubmit}
       />
-      <FaceRecognition box={box} imageUrl={ImageUrl} />
+      <FaceRecognition
+        faceBoxLocations={faceBoxLocations}
+        imageUrl={ImageUrl}
+      />
     </div>
   );
 }
