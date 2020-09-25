@@ -1,4 +1,4 @@
-# face-boxer
+# Image Face Detector
 
 A website application that leverages a 3rd party machine
 learning / artificial intelligence API to detect faces in user provided images.
